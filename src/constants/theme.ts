@@ -1,22 +1,37 @@
 import { MD3LightTheme } from "react-native-paper";
 
 export const colors = {
-  primary: "#00674F",       // deep forest green – main CTA / accent
-  primaryLight: "#2D8C6F",  // lighter green – links, outlines
-  primaryDark: "#004D3B",   // deep emerald – pressed states
-  secondary: "#800000",     // deep maroon
-  accent1: "#A0522D",       // sienna – warm earthy brown
-  accent2: "#4CAF88",       // mint green – complementary vibrancy
-  accent3: "#B8D8C8",       // sage teal – soft cool balance
-  accent4: "#C8A96E",       // warm gold – rich contrast
-  background: "#FFFFFF",    // pure white
-  surface: "#F4F8F6",       // light green-tinted white
-  surfaceLight: "#EDF5F1",  // card surface
-  text: "#1A2B25",          // warm dark green-black
-  textSecondary: "#5A7A6E", // muted green-grey
+  // Core backgrounds — warm cream / parchment
+  background: "#FAF7F2",       // warm cream base
+  surface: "#F4EFE6",          // parchment card surface
+  surfaceLight: "#EDE6DA",     // elevated card / alt rows
+  surfaceElevated: "#E5DDD0",  // modals / popovers
+
+  // Brand colors — emerald green + maroon
+  primary: "#00674F",          // deep emerald — main CTA / accent
+  primaryLight: "#2E8B6F",     // sage green — links, outlines
+  primaryDark: "#004D3A",      // forest — pressed states
+  secondary: "#800000",        // rich maroon — highlights
+  secondaryLight: "#A52929",   // crimson — shimmer / hover
+  secondaryDark: "#5C0000",    // deep burgundy
+
+  // Supporting accents
+  accent1: "#B8860B",          // antique gold — chart elements, badges
+  accent1Light: "#D4A843",     // warm gold highlight
+  accent2: "#C1440E",          // terracotta — decorative / warm contrast
+  accent3: "#4A6741",          // moss green — muted green sibling
+  accent4: "#7A5230",          // warm umber — earthy neutral accent
+
+  // Text — warm browns, not cold grays
+  text: "#1C1410",             // warm near-black
+  textSecondary: "#6B5B4E",    // muted earth tone
+  textMuted: "#A0907E",        // very muted — hints
+
+  // System
   error: "#C0392B",
-  success: "#4CAF88",
-  border: "#C4DDD4",        // soft green border
+  success: "#2E7D52",
+  border: "#D4C9BC",           // warm neutral border
+  borderGlow: "#00674F",       // glowing border on focus/hover
 };
 
 export const theme = {
@@ -27,10 +42,20 @@ export const theme = {
     secondary: colors.secondary,
     background: colors.background,
     surface: colors.surface,
+    surfaceVariant: colors.surfaceLight,
     error: colors.error,
     onPrimary: "#FFFFFF",
+    onSecondary: "#FFFFFF",
     onSurface: colors.text,
     onBackground: colors.text,
     outline: colors.border,
+    elevation: {
+      level0: "transparent",
+      level1: colors.surface,
+      level2: colors.surfaceLight,
+      level3: colors.surfaceElevated,
+      level4: colors.surfaceElevated,
+      level5: colors.surfaceElevated,
+    },
   },
 };

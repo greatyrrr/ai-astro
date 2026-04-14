@@ -7,13 +7,13 @@ import {
   ScrollView,
 } from "react-native";
 import { TextInput, Button, Text, HelperText, Snackbar } from "react-native-paper";
-import type { StackNavigationProp } from "@react-navigation/stack";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useAuth } from "../context/AuthContext";
 import { colors } from "../constants/theme";
 import { mediumImpact, errorFeedback } from "../utils/haptics";
 
 type Props = {
-  navigation: StackNavigationProp<any>;
+  navigation: NativeStackNavigationProp<any>;
 };
 
 export default function LoginScreen({ navigation }: Props) {
@@ -24,8 +24,8 @@ export default function LoginScreen({ navigation }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [sessionBanner, setSessionBanner] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Show session-expired banner if redirected here after a 401
   useEffect(() => {
     if (sessionExpiredMessage) {
       setSessionBanner(sessionExpiredMessage);
@@ -46,7 +46,6 @@ export default function LoginScreen({ navigation }: Props) {
     await mediumImpact();
     try {
       await login(email.trim(), password);
-      // AuthContext sets token → RootNavigator fades to AppNavigator
     } catch (err: any) {
       await errorFeedback();
       if (!err.response) {
@@ -69,10 +68,15 @@ export default function LoginScreen({ navigation }: Props) {
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.title}>Welcome Back</Text>
-        <Text style={styles.subtitle}>Sign in to continue</Text>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.logo}>✦</Text>
+          <Text style={styles.title}>Welcome Back</Text>
+          <Text style={styles.subtitle}>Sign in to continue your journey</Text>
+        </View>
 
-        <View style={styles.form}>
+        {/* Form card */}
+        <View style={styles.formCard}>
           <TextInput
             label="Email"
             value={email}
@@ -84,6 +88,8 @@ export default function LoginScreen({ navigation }: Props) {
             outlineColor={colors.border}
             activeOutlineColor={colors.primary}
             textColor={colors.text}
+            theme={{ colors: { onSurfaceVariant: colors.textSecondary } }}
+            left={<TextInput.Icon icon="email-outline" color={colors.textSecondary} />}
           />
 
           <TextInput
@@ -91,17 +97,26 @@ export default function LoginScreen({ navigation }: Props) {
             value={password}
             onChangeText={setPassword}
             mode="outlined"
-            secureTextEntry
+            secureTextEntry={!showPassword}
             style={styles.input}
             outlineColor={colors.border}
             activeOutlineColor={colors.primary}
             textColor={colors.text}
+            theme={{ colors: { onSurfaceVariant: colors.textSecondary } }}
+            left={<TextInput.Icon icon="lock-outline" color={colors.textSecondary} />}
+            right={
+              <TextInput.Icon
+                icon={showPassword ? "eye-off" : "eye"}
+                color={colors.textSecondary}
+                onPress={() => setShowPassword((v) => !v)}
+              />
+            }
           />
 
           {!!error && (
-            <HelperText type="error" visible>
-              {error}
-            </HelperText>
+            <View style={styles.errorBox}>
+              <Text style={styles.errorText}>⚠ {error}</Text>
+            </View>
           )}
 
           <Button
@@ -112,21 +127,30 @@ export default function LoginScreen({ navigation }: Props) {
             style={styles.btn}
             contentStyle={styles.btnContent}
             labelStyle={styles.btnLabel}
+            buttonColor={colors.primary}
           >
             Sign In
           </Button>
 
+          {/* Divider */}
+          <View style={styles.dividerRow}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
           <Button
-            mode="text"
+            mode="outlined"
             onPress={() => navigation.navigate("SignUp")}
+            style={styles.linkBtn}
             labelStyle={styles.linkLabel}
+            textColor={colors.primaryLight}
           >
-            Don't have an account? Sign Up
+            Create an Account
           </Button>
         </View>
       </ScrollView>
 
-      {/* Session-expired toast (shown when 401 auto-logged user out) */}
       <Snackbar
         visible={!!sessionBanner}
         onDismiss={() => setSessionBanner("")}
@@ -147,40 +171,95 @@ const styles = StyleSheet.create({
   scroll: {
     flexGrow: 1,
     justifyContent: "center",
-    paddingHorizontal: 32,
+    paddingHorizontal: 24,
     paddingVertical: 48,
+  },
+  header: {
+    alignItems: "center",
+    marginBottom: 36,
+    gap: 6,
+  },
+  logo: {
+    fontSize: 36,
+    color: colors.primary,
+    marginBottom: 8,
+    textShadowColor: colors.primary,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 12,
   },
   title: {
     fontSize: 28,
-    fontWeight: "700",
+    fontWeight: "800",
     color: colors.text,
-    marginBottom: 4,
+    letterSpacing: 0.5,
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: 14,
     color: colors.textSecondary,
-    marginBottom: 32,
   },
-  form: {
-    gap: 12,
+  formCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 20,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: colors.border,
+    gap: 14,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
   },
   input: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceLight,
+  },
+  errorBox: {
+    backgroundColor: colors.error + "22",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.error + "55",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  errorText: {
+    color: colors.error,
+    fontSize: 13,
+    fontWeight: "500",
   },
   btn: {
     borderRadius: 12,
-    marginTop: 8,
+    marginTop: 4,
   },
   btnContent: {
     paddingVertical: 6,
   },
   btnLabel: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
+    letterSpacing: 0.5,
+  },
+  dividerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.border,
+  },
+  dividerText: {
+    fontSize: 12,
+    color: colors.textMuted,
+    letterSpacing: 1,
+  },
+  linkBtn: {
+    borderRadius: 12,
+    borderColor: colors.border,
   },
   linkLabel: {
-    color: colors.primaryLight,
     fontSize: 14,
+    fontWeight: "600",
   },
   sessionSnackbar: {
     backgroundColor: colors.error,

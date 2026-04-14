@@ -5,19 +5,34 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native";
-import { Text, Card, Button, Divider, Snackbar } from "react-native-paper";
+import { Text, Button, Divider, Snackbar } from "react-native-paper";
 import { useFocusEffect } from "@react-navigation/native";
-import type { StackNavigationProp } from "@react-navigation/stack";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 import { getBirthProfile, getChart } from "../api/endpoints";
 import { useAuth } from "../context/AuthContext";
 import VedicChartWheel, { buildHouses } from "../components/VedicChartWheel";
+import CosmicCard from "../components/CosmicCard";
+import SectionHeader from "../components/SectionHeader";
+import ZodiacBadge from "../components/ZodiacBadge";
 import type { BirthProfile, BirthChart } from "../types";
 import { colors } from "../constants/theme";
 
-type Props = {
-  navigation: StackNavigationProp<any>;
-};
+// Logic unchanged — UI only
+type Props = { navigation: NativeStackNavigationProp<any> };
+
+function findPlanet(planets: any[], name: string) {
+  return planets.find((p) => p.name === name);
+}
+
+const DetailRow = ({ label, value, icon }: { label: string; value: string; icon?: string }) => (
+  <View style={styles.detailRow}>
+    <Text style={styles.detailLabel}>
+      {icon ? `${icon}  ` : ""}{label}
+    </Text>
+    <Text style={styles.detailValue}>{value}</Text>
+  </View>
+);
 
 export default function ProfileScreen({ navigation }: Props) {
   const { logout } = useAuth();
@@ -57,19 +72,21 @@ export default function ProfileScreen({ navigation }: Props) {
         if (!cancelled) setLoading(false);
       })();
 
-      return () => {
-        cancelled = true;
-      };
+      return () => { cancelled = true; };
     }, [])
   );
 
   const planets = chart?.chart_data.planets ?? [];
   const houses = planets.length > 0 ? buildHouses(planets) : [];
+  const sun = findPlanet(planets, "Sun");
+  const moon = findPlanet(planets, "Moon");
 
   if (loading) {
     return (
       <View style={styles.loader}>
-        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={styles.loadingIcon}>✦</Text>
+        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 12 }} />
+        <Text style={styles.loadingText}>Loading your profile…</Text>
       </View>
     );
   }
@@ -82,69 +99,64 @@ export default function ProfileScreen({ navigation }: Props) {
       >
         {/* Mini Chart */}
         {houses.length > 0 && (
-          <Card style={[styles.card, styles.chartCard]}>
-            <Card.Content style={styles.chartContent}>
+          <CosmicCard noPadding glowColor={colors.primaryDark}>
+            <View style={styles.chartPadding}>
+              <SectionHeader title="Your Chart" icon="🪐" accent={colors.primary} />
+            </View>
+            <View style={styles.chartContent}>
               <VedicChartWheel houses={houses} size={220} />
-            </Card.Content>
-          </Card>
+              {/* Key signs under chart */}
+              {(sun || moon) && (
+                <View style={styles.keySignsRow}>
+                  {sun?.sign && <ZodiacBadge sign={sun.sign} label="Sun" size="sm" />}
+                  {moon?.sign && <ZodiacBadge sign={moon.sign} label="Moon" size="sm" />}
+                </View>
+              )}
+            </View>
+          </CosmicCard>
         )}
 
-        {/* Birth Profile card */}
-        <Card style={styles.card}>
-          <Card.Content>
-            <View style={styles.sectionHeader}>
-              <Ionicons name="planet-outline" size={20} color={colors.secondary} />
-              <Text style={styles.sectionTitle}>Birth Details</Text>
-            </View>
+        {/* Birth Details card */}
+        <CosmicCard>
+          <SectionHeader title="Birth Details" icon="🌟" accent={colors.secondary} />
 
-            {profile ? (
-              <>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Name</Text>
-                  <Text style={styles.detailValue}>{profile.full_name}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Gender</Text>
-                  <Text style={styles.detailValue}>{profile.gender}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Date</Text>
-                  <Text style={styles.detailValue}>{profile.birth_date}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Time</Text>
-                  <Text style={styles.detailValue}>{profile.birth_time}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Location</Text>
-                  <Text style={styles.detailValue}>{profile.birth_location}</Text>
-                </View>
-              </>
-            ) : (
-              <Text style={styles.emptyText}>No birth profile found</Text>
-            )}
-          </Card.Content>
+          {profile ? (
+            <>
+              <DetailRow label="Name"     value={profile.full_name}      icon="👤" />
+              <DetailRow label="Gender"   value={profile.gender}         icon="⚥" />
+              <DetailRow label="Date"     value={profile.birth_date}     icon="📅" />
+              <DetailRow label="Time"     value={profile.birth_time}     icon="🕐" />
+              <DetailRow label="Location" value={profile.birth_location} icon="📍" />
+            </>
+          ) : (
+            <Text style={styles.emptyText}>No birth profile found</Text>
+          )}
 
-          <Card.Actions style={styles.cardActions}>
+          <View style={styles.actionsRow}>
             <Button
               mode="contained"
               onPress={() => navigation.navigate("ChartView")}
+              style={styles.actionBtn}
+              buttonColor={colors.primary}
+              labelStyle={styles.actionBtnLabel}
               compact
             >
-              View My Chart
+              View Chart
             </Button>
             <Button
               mode="outlined"
               onPress={() => navigation.navigate("EditProfile", { profile })}
+              style={[styles.actionBtn, styles.actionBtnOutline]}
               textColor={colors.primaryLight}
+              labelStyle={styles.actionBtnLabel}
               compact
             >
               Edit Details
             </Button>
-          </Card.Actions>
-        </Card>
+          </View>
+        </CosmicCard>
 
-        {/* Logout */}
+        {/* Logout section */}
         <Divider style={styles.divider} />
 
         <Button
@@ -153,6 +165,7 @@ export default function ProfileScreen({ navigation }: Props) {
           textColor={colors.error}
           icon="logout"
           style={styles.logoutBtn}
+          labelStyle={styles.logoutLabel}
         >
           Sign Out
         </Button>
@@ -177,73 +190,92 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 40,
+    paddingBottom: 48,
   },
   loader: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: colors.background,
+    gap: 8,
   },
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    marginBottom: 16,
+  loadingIcon: {
+    fontSize: 40,
+    color: colors.primary,
+    textShadowColor: colors.primary,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 16,
   },
-  chartCard: {
-    alignItems: "center",
+  loadingText: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    marginTop: 8,
+  },
+  chartPadding: {
+    padding: 16,
+    paddingBottom: 0,
   },
   chartContent: {
     alignItems: "center",
+    paddingBottom: 20,
+    gap: 16,
   },
-  sectionHeader: {
+  keySignsRow: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: colors.text,
+    gap: 20,
   },
   detailRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 8,
-    minHeight: 36,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingVertical: 11,
+    borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
   detailLabel: {
     color: colors.textSecondary,
-    fontSize: 14,
+    fontSize: 13,
+    fontWeight: "500",
     flexShrink: 0,
     marginRight: 12,
   },
   detailValue: {
     color: colors.text,
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: "600",
     flex: 1,
     textAlign: "right",
   },
   emptyText: {
     color: colors.textSecondary,
     fontSize: 14,
+    paddingVertical: 8,
   },
-  cardActions: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    gap: 8,
+  actionsRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 16,
+  },
+  actionBtn: {
+    flex: 1,
+    borderRadius: 10,
+  },
+  actionBtnOutline: {
+    borderColor: colors.border,
+  },
+  actionBtnLabel: {
+    fontSize: 13,
+    fontWeight: "600",
   },
   divider: {
     backgroundColor: colors.border,
     marginVertical: 8,
   },
   logoutBtn: {
-    marginTop: 8,
+    marginTop: 4,
+  },
+  logoutLabel: {
+    fontSize: 14,
   },
   snackbar: {
     backgroundColor: colors.error,

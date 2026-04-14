@@ -12,7 +12,7 @@ import { TextInput, Button, Text, HelperText } from "react-native-paper";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
-import type { StackNavigationProp } from "@react-navigation/stack";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useRoute } from "@react-navigation/native";
 import { createBirthProfile } from "../api/endpoints";
 import { useAuth } from "../context/AuthContext";
@@ -36,7 +36,7 @@ function parseTimeString(timeStr: string): Date | null {
 }
 
 type Props = {
-  navigation: StackNavigationProp<any>;
+  navigation: NativeStackNavigationProp<any>;
 };
 
 export default function BirthProfileInputScreen({ navigation }: Props) {

@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { Text, FAB, Snackbar } from "react-native-paper";
 import { useFocusEffect } from "@react-navigation/native";
-import type { StackNavigationProp } from "@react-navigation/stack";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 import { format } from "date-fns";
 import { getConversations, createConversation } from "../api/endpoints";
@@ -17,7 +17,7 @@ import { colors } from "../constants/theme";
 import { lightImpact, mediumImpact } from "../utils/haptics";
 
 type Props = {
-  navigation: StackNavigationProp<any>;
+  navigation: NativeStackNavigationProp<any>;
 };
 
 export default function ChatListScreen({ navigation }: Props) {
